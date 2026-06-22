@@ -1,0 +1,227 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useSchool } from "@/lib/useSchool";
+import {
+  ClipboardList,
+  GraduationCap,
+  CheckCircle,
+  Clock,
+  XCircle,
+  ArrowRight,
+  FileText,
+  ImageIcon,
+  Bell,
+  CreditCard,
+  School,
+} from "lucide-react";
+
+export default function DashboardEcoleHome() {
+  const { school, loading: schoolLoading } = useSchool();
+  const [applications, setApplications] = useState<any[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!school) return;
+    loadData(school.id);
+  }, [school]);
+
+  async function loadData(schoolId: string) {
+    setLoading(true);
+    const [{ data: apps }, { data: cls }] = await Promise.all([
+      supabase
+        .from("applications")
+        .select("id, student_first_name, student_last_name, full_student_name, parent_name, desired_level, status, created_at")
+        .eq("establishment_id", schoolId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("classes")
+        .select("id, name, level, teacher_name")
+        .eq("establishment_id", schoolId)
+        .order("created_at", { ascending: false }),
+    ]);
+    if (apps) setApplications(apps);
+    if (cls) setClasses(cls);
+    setLoading(false);
+  }
+
+  const pending = applications.filter((a) => a.status === "pending" || a.status === "reviewing").length;
+  const accepted = applications.filter((a) => a.status === "accepted").length;
+  const rejected = applications.filter((a) => a.status === "rejected").length;
+
+  if (schoolLoading) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="h-8 bg-white rounded-xl w-1/3" />
+        <div className="grid grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-white rounded-xl" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (!school) {
+    return (
+      <div className="max-w-md mx-auto text-center py-20">
+        <div className="w-14 h-14 rounded-2xl bg-white border border-[#ebebeb] flex items-center justify-center mx-auto mb-5">
+          <School size={24} className="text-slate-400" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Aucun établissement lié</h2>
+        <p className="text-slate-500 text-sm mb-6">
+          Votre compte n'est pas encore associé à un établissement. Contactez l'administrateur de la plateforme.
+        </p>
+        <Link href="/" className="text-sm font-semibold text-emerald-700 hover:underline">
+          Retour à l'accueil
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-5xl">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-2">
+          <p className="text-xs font-semibold tracking-widest uppercase text-slate-400">Tableau de bord</p>
+          {school.is_verified && (
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+              <CheckCircle size={9} /> Vérifié
+            </span>
+          )}
+        </div>
+        <h1 className="text-3xl font-black tracking-tight text-[#0a0a0a]">{school.name}</h1>
+        <p className="text-slate-500 text-sm mt-1">{school.city} · {school.main_category}</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: "Demandes", value: applications.length, icon: ClipboardList, color: "text-slate-700" },
+          { label: "En attente", value: pending, icon: Clock, color: "text-yellow-600" },
+          { label: "Acceptées", value: accepted, icon: CheckCircle, color: "text-emerald-600" },
+          { label: "Refusées", value: rejected, icon: XCircle, color: "text-red-500" },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} className="bg-white border border-[#ebebeb] rounded-xl p-5">
+              <Icon size={18} className={`${stat.color} mb-3`} />
+              <p className="text-3xl font-black text-[#0a0a0a]">{stat.value}</p>
+              <p className="text-xs text-slate-400 font-semibold mt-1">{stat.label}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Recent applications */}
+        <div className="lg:col-span-2 bg-white border border-[#ebebeb] rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#ebebeb]">
+            <h2 className="font-bold text-sm">Dernières préinscriptions</h2>
+            <Link href="/dashboard/ecole/admissions" className="text-xs font-semibold text-emerald-700 hover:text-emerald-600 flex items-center gap-1">
+              Voir tout <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="p-6 space-y-3">
+              {[1,2,3].map(i => <div key={i} className="h-12 bg-slate-50 rounded-lg animate-pulse" />)}
+            </div>
+          ) : applications.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <ClipboardList size={28} className="mx-auto text-slate-200 mb-3" />
+              <p className="text-sm text-slate-400">Aucune préinscription reçue</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-[#f5f5f5]">
+              {applications.slice(0, 6).map((app) => {
+                const name = app.full_student_name || `${app.student_first_name ?? ""} ${app.student_last_name ?? ""}`.trim() || "—";
+                const statusConfig = {
+                  pending:   { label: "En attente", cls: "bg-yellow-50 text-yellow-700 border-yellow-200" },
+                  reviewing: { label: "En cours",   cls: "bg-blue-50 text-blue-700 border-blue-200" },
+                  accepted:  { label: "Acceptée",   cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                  rejected:  { label: "Refusée",    cls: "bg-red-50 text-red-700 border-red-200" },
+                } as Record<string, { label: string; cls: string }>;
+                const s = statusConfig[app.status] ?? { label: app.status, cls: "bg-slate-50 text-slate-600 border-slate-200" };
+                return (
+                  <div key={app.id} className="flex items-center justify-between px-6 py-3.5 hover:bg-slate-50/50 transition-colors">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-[#0a0a0a] truncate">{name}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Parent : {app.parent_name ?? "—"} · {app.desired_level ?? "Niveau non précisé"}
+                      </p>
+                    </div>
+                    <span className={`ml-4 shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full border ${s.cls}`}>
+                      {s.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Right column */}
+        <div className="space-y-4">
+          {/* Classes */}
+          <div className="bg-white border border-[#ebebeb] rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#ebebeb]">
+              <h2 className="font-bold text-sm">Classes</h2>
+              <Link href="/dashboard/ecole/classes" className="text-xs font-semibold text-emerald-700 hover:text-emerald-600 flex items-center gap-1">
+                Gérer <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div className="p-4">
+              {loading ? (
+                <div className="h-8 bg-slate-50 rounded-lg animate-pulse" />
+              ) : classes.length === 0 ? (
+                <p className="text-xs text-slate-400 text-center py-3">Aucune classe créée</p>
+              ) : (
+                <div className="space-y-2">
+                  {classes.slice(0, 4).map((c) => (
+                    <div key={c.id} className="flex items-center justify-between py-1.5">
+                      <div>
+                        <p className="text-sm font-semibold">{c.name}</p>
+                        <p className="text-xs text-slate-400">{c.level}</p>
+                      </div>
+                      <GraduationCap size={14} className="text-slate-300" />
+                    </div>
+                  ))}
+                  {classes.length > 4 && (
+                    <p className="text-xs text-slate-400 pt-1">+{classes.length - 4} autres</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Quick links */}
+          <div className="bg-white border border-[#ebebeb] rounded-2xl p-4 space-y-1">
+            <p className="text-[10px] font-semibold tracking-widest uppercase text-slate-400 px-2 mb-3">Accès rapide</p>
+            {[
+              { href: "/dashboard/ecole/annonces", label: "Publier une annonce", icon: Bell },
+              { href: "/dashboard/ecole/documents", label: "Ajouter un document", icon: FileText },
+              { href: "/dashboard/ecole/galerie", label: "Galerie photos", icon: ImageIcon },
+              { href: "/dashboard/ecole/paiements", label: "Suivre les paiements", icon: CreditCard },
+            ].map((l) => {
+              const Icon = l.icon;
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm text-slate-600 hover:text-[#0a0a0a] hover:bg-slate-50 transition-colors"
+                >
+                  <Icon size={15} className="text-slate-400" />
+                  {l.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
