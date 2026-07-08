@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
   MapPin,
+  Phone,
   School,
   GraduationCap,
   Baby,
@@ -64,13 +65,18 @@ type School = {
   category: string;
   subcategory: string;
   city: string;
-  neighborhood: string;
+  quartier: string;
+  phone: string;
   fees: number;
   registration: number;
   verified: boolean;
+  isClaimed: boolean;
   onlinePayment: boolean;
   isFeatured: boolean;
-  image: string;
+  image: string | null;
+  couleurPrimaire: string | null;
+  couleurSecondaire: string | null;
+  emojiLogo: string | null;
   infrastructure: string[];
   lat: number | null;
   lng: number | null;
@@ -89,9 +95,6 @@ const INFRA_LABELS: Record<string, string> = {
   infirmary: "Infirmerie",
 };
 
-const PLACEHOLDER =
-  "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=900&q=80";
-
 function transformSchool(raw: any): School {
   const infra = raw.infrastructures?.[0] ?? {};
   const fee = raw.fees?.[0] ?? {};
@@ -99,19 +102,27 @@ function transformSchool(raw: any): School {
     .filter(([key, val]) => val === true && key in INFRA_LABELS)
     .map(([key]) => INFRA_LABELS[key]);
 
+  const firstSchoolImage: string | null = raw.school_images?.[0]?.url ?? null;
+  const image: string | null = firstSchoolImage ?? raw.cover_image_url ?? null;
+
   return {
     id: raw.id,
     name: raw.name,
     category: raw.main_category ?? "",
     subcategory: raw.sub_category ?? "",
     city: raw.city ?? "",
-    neighborhood: raw.neighborhood ?? "",
+    quartier: raw.quartier ?? raw.neighborhood ?? "",
+    phone: raw.phone ?? "",
     fees: fee.tuition_fee ?? 0,
     registration: fee.registration_fee ?? 0,
     verified: raw.is_verified ?? false,
+    isClaimed: raw.is_claimed ?? true,
     onlinePayment: raw.accepts_online_payment ?? false,
     isFeatured: raw.is_featured ?? false,
-    image: raw.cover_image_url ?? PLACEHOLDER,
+    image,
+    couleurPrimaire: raw.couleur_primaire ?? null,
+    couleurSecondaire: raw.couleur_secondaire ?? null,
+    emojiLogo: raw.emoji_logo ?? null,
     infrastructure,
     lat: raw.latitude ?? null,
     lng: raw.longitude ?? null,
@@ -177,11 +188,14 @@ export default function HomePage() {
         .from("establishments")
         .select(`
           id, name, main_category, sub_category,
-          city, neighborhood, cover_image_url,
-          is_verified, accepts_online_payment, is_featured,
+          city, quartier, neighborhood, phone,
+          cover_image_url, is_verified, is_claimed,
+          accepts_online_payment, is_featured,
+          couleur_primaire, couleur_secondaire, emoji_logo,
           latitude, longitude,
           fees(registration_fee, tuition_fee),
-          infrastructures(library, laboratory, computer_room, sports_field, canteen, transport, wifi, boarding, security, infirmary)
+          infrastructures(library, laboratory, computer_room, sports_field, canteen, transport, wifi, boarding, security, infirmary),
+          school_images(url)
         `)
         .order("is_featured", { ascending: false });
       if (data) setSchools(data.map(transformSchool));
@@ -221,7 +235,7 @@ export default function HomePage() {
       if (haversineKm(userLocation.lat, userLocation.lng, s.lat, s.lng) > Number(radius)) return false;
     }
     if (query) {
-      const t = `${s.name} ${s.city} ${s.neighborhood} ${s.category} ${s.subcategory}`.toLowerCase();
+      const t = `${s.name} ${s.city} ${s.quartier} ${s.category} ${s.subcategory}`.toLowerCase();
       if (!t.includes(query.toLowerCase())) return false;
     }
     return true;
@@ -553,14 +567,32 @@ export default function HomePage() {
                     key={school.id}
                     className="group bg-white rounded-xl overflow-hidden border border-[#ebebeb] hover:border-[#ccc] hover:-translate-y-0.5 transition-all duration-200"
                   >
-                    {/* Image */}
+                    {/* Image / Fallback */}
                     <div className="relative h-48 overflow-hidden bg-slate-100">
-                      <img
-                        src={school.image}
-                        alt={school.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                      {school.image ? (
+                        <img
+                          src={school.image}
+                          alt={school.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : school.couleurPrimaire && school.couleurSecondaire ? (
+                        <div
+                          className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+                          style={{ background: `linear-gradient(135deg, ${school.couleurPrimaire}, ${school.couleurSecondaire})` }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                          <span className="text-5xl">{school.emojiLogo ?? "🏫"}</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+
+                      {/* Emoji badge top-left (quand pas sponsorisé) */}
+                      {school.emojiLogo && !school.isFeatured && (
+                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-base leading-none px-2 py-1 rounded-xl">
+                          {school.emojiLogo}
+                        </span>
+                      )}
 
                       {school.isFeatured && (
                         <span className="absolute top-3 left-3 bg-yellow-400 text-[#0a0a0a] text-[11px] font-black px-2.5 py-1 rounded-full tracking-wide">
@@ -569,11 +601,6 @@ export default function HomePage() {
                       )}
 
                       <div className="absolute top-3 right-3 flex gap-1.5">
-                        {school.verified && (
-                          <span className="bg-white/90 backdrop-blur-sm rounded-full p-1.5">
-                            <CheckCircle2 size={13} className="text-emerald-600" />
-                          </span>
-                        )}
                         <button
                           onClick={(e) => { e.preventDefault(); toggleCompare(school.id); }}
                           className={`backdrop-blur-sm rounded-full p-1.5 transition-colors ${inCompare ? "bg-emerald-600 text-white" : "bg-white/90 text-slate-600 hover:text-emerald-600"}`}
@@ -588,22 +615,47 @@ export default function HomePage() {
 
                     {/* Info */}
                     <div className="p-4">
-                      <p className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase mb-1.5">
-                        {school.category.charAt(0).toUpperCase() + school.category.slice(1)}
-                        {school.subcategory ? ` · ${school.subcategory}` : ""}
-                      </p>
+                      {/* Badges */}
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full capitalize">
+                          {school.category}{school.subcategory ? ` · ${school.subcategory}` : ""}
+                        </span>
+                        {school.verified && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">
+                            <CheckCircle2 size={9} /> Vérifiée
+                          </span>
+                        )}
+                        {!school.isClaimed && (
+                          <span className="text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-200 px-2 py-0.5 rounded-full">
+                            Non revendiquée
+                          </span>
+                        )}
+                      </div>
 
                       <h3 className="font-bold text-[15px] leading-snug text-[#0a0a0a] mb-1.5 line-clamp-2">
                         {school.name}
                       </h3>
 
-                      <p className="flex items-center gap-1 text-xs text-slate-500 mb-3">
+                      <p className="flex items-center gap-1 text-xs text-slate-500 mb-1">
                         <MapPin size={11} />
-                        {school.city}{school.neighborhood ? `, ${school.neighborhood}` : ""}
+                        {school.quartier ? `${school.quartier}, ` : ""}{school.city}
                         {dist !== null && (
                           <span className="ml-1 text-emerald-600 font-semibold">· {dist.toFixed(1)} km</span>
                         )}
                       </p>
+
+                      {school.phone ? (
+                        <a
+                          href={`tel:${school.phone}`}
+                          className="flex items-center gap-1 text-xs text-slate-500 hover:text-emerald-700 transition-colors mb-3"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Phone size={11} />
+                          {school.phone}
+                        </a>
+                      ) : (
+                        <div className="mb-3" />
+                      )}
 
                       {school.fees > 0 && (
                         <p className="text-xs text-slate-500 mb-3">
@@ -626,13 +678,23 @@ export default function HomePage() {
                         </div>
                       )}
 
-                      <Link
-                        href={`/ecole/${school.id}`}
-                        className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-600 transition-colors group/link"
-                      >
-                        Voir la fiche
-                        <ArrowRight size={14} className="group-hover/link:translate-x-0.5 transition-transform" />
-                      </Link>
+                      {school.isClaimed ? (
+                        <Link
+                          href={`/ecole/${school.id}`}
+                          className="flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:text-emerald-600 transition-colors group/link"
+                        >
+                          Voir la fiche
+                          <ArrowRight size={14} className="group-hover/link:translate-x-0.5 transition-transform" />
+                        </Link>
+                      ) : (
+                        <Link
+                          href={`/auth/inscription?ecole=${school.id}`}
+                          className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-[#0a0a0a] transition-colors group/link"
+                        >
+                          Revendiquer cette page
+                          <ArrowRight size={14} className="group-hover/link:translate-x-0.5 transition-transform" />
+                        </Link>
+                      )}
                     </div>
                   </div>
                 );
