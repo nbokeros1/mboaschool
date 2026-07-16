@@ -20,6 +20,7 @@ import {
   Settings,
   DollarSign,
   Building2,
+  CalendarDays,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -34,6 +35,7 @@ const nav = [
   { href: "/dashboard/ecole/galerie",       label: "Galerie",        icon: ImageIcon },
   { href: "/dashboard/ecole/paiements",     label: "Paiements",      icon: CreditCard },
   { href: "/dashboard/ecole/parametres",    label: "Paramètres",     icon: Settings },
+  { href: "/pro/emplois-du-temps",          label: "Emplois du temps", icon: CalendarDays },
 ];
 
 export default function EcoleDashboardLayout({ children }: { children: React.ReactNode }) {
