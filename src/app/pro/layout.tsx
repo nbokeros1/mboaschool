@@ -1,31 +1,55 @@
 import Link from "next/link";
 import { School } from "lucide-react";
 
+const NAV = [
+  { href: "/pro/emplois-du-temps",       label: "Emplois du temps" },
+  { href: "/pro/pointage/kiosque",       label: "Kiosque présence" },
+  { href: "/pro/pointage/historique",    label: "Historique présence" },
+];
+
 export default function ProLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f9f7f2]">
-      <header className="bg-[#0a0f0d] text-white px-6 py-3 flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="relative w-7 h-7 flex items-center justify-center shrink-0">
-            <div className="absolute inset-0 flex">
-              <span className="flex-1 bg-emerald-600 rounded-l-md" />
-              <span className="flex-1 bg-red-500" />
-              <span className="flex-1 bg-yellow-400 rounded-r-md" />
+      <header className="bg-[#0a0f0d] text-white">
+        {/* Ligne 1 : logo + retour tableau de bord */}
+        <div className="px-6 py-3 flex items-center gap-4 border-b border-white/5">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <div className="relative w-7 h-7 flex items-center justify-center">
+              <div className="absolute inset-0 flex">
+                <span className="flex-1 bg-emerald-600 rounded-l-md" />
+                <span className="flex-1 bg-red-500" />
+                <span className="flex-1 bg-yellow-400 rounded-r-md" />
+              </div>
+              <School size={13} className="relative z-10 text-white" />
             </div>
-            <School size={13} className="relative z-10 text-white" />
+            <span className="text-base font-black tracking-tight">
+              MboaSchool<span className="text-emerald-400 font-bold"> Pro</span>
+            </span>
+          </Link>
+          <div className="ml-auto">
+            <Link
+              href="/dashboard/ecole"
+              className="text-sm text-slate-400 hover:text-white transition-colors"
+            >
+              ← Tableau de bord
+            </Link>
           </div>
-          <span className="text-base font-black tracking-tight">
-            MboaSchool<span className="text-emerald-400 font-bold"> Pro</span>
-          </span>
-        </Link>
-        <span className="text-white/20">|</span>
-        <Link
-          href="/dashboard/ecole"
-          className="text-sm text-slate-400 hover:text-white transition-colors"
-        >
-          ← Tableau de bord
-        </Link>
+        </div>
+
+        {/* Ligne 2 : navigation */}
+        <nav className="px-6 flex gap-1 overflow-x-auto">
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="shrink-0 px-4 py-2.5 text-sm font-medium text-slate-400 hover:text-white transition-colors border-b-2 border-transparent hover:border-emerald-500"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </header>
+
       <main>{children}</main>
     </div>
   );
