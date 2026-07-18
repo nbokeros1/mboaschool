@@ -1,4 +1,4 @@
-# CLAUDE_CONTEXT — MboaSchool
+# CLAUDE_CONTEXT — Écoles237 MVP
 
 > Ce fichier est à coller en début de conversation avec Claude (claude.ai)
 > avant de poser toute question sur ce projet.
@@ -8,9 +8,9 @@
 
 ## C'est quoi ce projet
 
-MboaSchool est un annuaire scolaire pour le Cameroun — anciennement Écoles237.
+Écoles237 est un annuaire scolaire pour le Cameroun.
 Le point de départ : trouver une école à Douala ou Yaoundé se fait encore
-par bouche-à-oreille ou en se déplaçant. MboaSchool construit d'abord un
+par bouche-à-oreille ou en se déplaçant. Écoles237 construit d'abord un
 annuaire gratuit et ouvert à tous, puis propose aux établissements trois
 niveaux de services payants.
 
@@ -73,10 +73,10 @@ L'école gère elle-même sa page. Les parents soumettent des pré-inscriptions
 avec un code de suivi automatique. Pas de paiement en ligne — l'école
 encaisse par ses propres moyens (Orange Money, MTN MoMo, espèces) et
 marque manuellement la pré-inscription comme payée.
-Commission MboaSchool : 2% par inscription confirmée.
+Commission Écoles237 : 2% par inscription confirmée.
 
 **Offre 2 — Gérée**
-L'équipe MboaSchool gère la page de l'école à sa place.
+L'équipe Écoles237 gère la page de l'école à sa place.
 Accès admin complet avec journal des modifications.
 Tarif : forfait annuel + petit pourcentage (montants à définir).
 
@@ -142,7 +142,7 @@ Table à prévoir : `sections` avec `ecole_id`, `nom`, `responsable_id`, `type`.
 |---|---|
 | Parent / public | Annuaire, fiche école, formulaire de pré-inscription |
 | École (autonome) | Dashboard de sa propre page |
-| Équipe MboaSchool (offre gérée) | Admin complet sur les écoles gérées |
+| Équipe Écoles237 (offre gérée) | Admin complet sur les écoles gérées |
 | Admin plateforme | Vue globale, vérification, gestion des comptes |
 | Directeur / censeur de section | Module Pro — limité à sa section |
 | Enseignant | Module Pro — espace personnel |
@@ -154,7 +154,7 @@ Table à prévoir : `sections` avec `ecole_id`, `nom`, `responsable_id`, `type`.
 Ne pas commencer ces sujets avant la fin des deux semaines :
 
 - Module Pro complet (emplois du temps, pointage, salaires, bulletins)
-- Offre Gérée avec accès admin équipe MboaSchool
+- Offre Gérée avec accès admin équipe Écoles237
 - Journal des modifications (traçabilité)
 - Paiement en ligne (Orange Money, MTN MoMo)
 - Volet institutionnel public (IPR / IPD)

@@ -1,5 +1,5 @@
 -- ============================================================================
--- MboaSchool Pro — Module Présence Enseignants (Phase 1 — Mode Kiosque)
+-- Écoles237 Pro — Module Présence Enseignants (Phase 1 — Mode Kiosque)
 -- ============================================================================
 
 -- 1. Colonnes supplémentaires sur enseignants

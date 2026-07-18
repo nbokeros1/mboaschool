@@ -1,5 +1,5 @@
 -- ============================================================
--- seed_schools.sql — Établissements MboaSchool
+-- seed_schools.sql — Établissements Écoles237
 -- 20 Yaoundé + 20 Douala, données réelles ou très plausibles
 -- À VÉRIFIER = à confirmer avant mise en production
 -- ============================================================

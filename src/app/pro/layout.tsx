@@ -23,7 +23,7 @@ export default function ProLayout({ children }: { children: React.ReactNode }) {
               <School size={13} className="relative z-10 text-white" />
             </div>
             <span className="text-base font-black tracking-tight">
-              MboaSchool<span className="text-emerald-400 font-bold"> Pro</span>
+              Écoles237<span className="text-emerald-400 font-bold"> Pro</span>
             </span>
           </Link>
           <div className="ml-auto">

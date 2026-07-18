@@ -226,7 +226,7 @@ export default function KioskuePage() {
         {status === "loading" ? "Enregistrement…" : "Valider"}
       </button>
 
-      <p className="text-white/20 text-xs mt-1">MboaSchool Pro · Mode kiosque</p>
+      <p className="text-white/20 text-xs mt-1">Écoles237 Pro · Mode kiosque</p>
     </div>
   );
 }
