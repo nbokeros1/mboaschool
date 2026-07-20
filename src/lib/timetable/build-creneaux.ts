@@ -1,9 +1,9 @@
 // lib/timetable/build-creneaux.ts
 //
-// Transforme les contraintes de l'établissement (amplitude, pause déjeuner,
-// récréations, durée de créneau) en une grille concrète de créneaux horaires.
+// Transforme les contraintes de l'Ã©tablissement (amplitude, pause dÃ©jeuner,
+// rÃ©crÃ©ations, durÃ©e de crÃ©neau) en une grille concrÃ¨te de crÃ©neaux horaires.
 // Cette grille est stable : elle ne change que si le directeur modifie les
-// contraintes de l'établissement, pas à chaque génération d'emploi du temps.
+// contraintes de l'Ã©tablissement, pas Ã  chaque gÃ©nÃ©ration d'emploi du temps.
 
 import type { ContraintesEtablissement, JourSemaine } from "./types";
 
@@ -28,11 +28,11 @@ function toHHMM(minutes: number): string {
 }
 
 /**
- * Construit la liste des créneaux (cours + récréations + pause déjeuner)
- * pour un jour donné, à partir des contraintes. Les créneaux de type
+ * Construit la liste des crÃ©neaux (cours + rÃ©crÃ©ations + pause dÃ©jeuner)
+ * pour un jour donnÃ©, Ã  partir des contraintes. Les crÃ©neaux de type
  * 'recreation' et 'pause_dejeuner' sont inclus pour que l'affichage en
- * grille montre les coupures — le moteur de génération, lui, ignore ces
- * créneaux (il ne travaille que sur type === 'cours').
+ * grille montre les coupures â€” le moteur de gÃ©nÃ©ration, lui, ignore ces
+ * crÃ©neaux (il ne travaille que sur type === 'cours').
  */
 export function construireCreneauxJour(
   jour: JourSemaine,
@@ -42,7 +42,7 @@ export function construireCreneauxJour(
   const fin = toMinutes(contraintes.heure_fin_amplitude);
   const duree = contraintes.duree_creneau_minutes;
 
-  // Fenêtres bloquées (pause déjeuner + récréations), triées par heure de début
+  // FenÃªtres bloquÃ©es (pause dÃ©jeuner + rÃ©crÃ©ations), triÃ©es par heure de dÃ©but
   const blocages: { debut: number; fin: number; type: "recreation" | "pause_dejeuner" }[] = [];
   if (contraintes.pause_dejeuner_debut && contraintes.pause_dejeuner_fin) {
     blocages.push({

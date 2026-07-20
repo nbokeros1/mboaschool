@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
   const { data } = await supabase
     .from("establishments")
     .select("name, city, main_category, description")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!data) {

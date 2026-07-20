@@ -1,16 +1,16 @@
 // lib/timetable/generate.ts
 //
-// G�n�rateur d'emploi du temps par backtracking sous contraintes (CSP).
+// Générateur d'emploi du temps par backtracking sous contraintes (CSP).
 //
 // Pourquoi pas un simple remplissage glouton ligne par ligne : un directeur
 // avec 15 classes et 25 enseignants a largement assez de contraintes
-// crois�es (un m�me prof de maths intervient dans 4 classes) pour qu'un
-// remplissage na�f se bloque � mi-parcours sans solution. Le backtracking
-// revient en arri�re quand une affectation locale rend la suite impossible.
+// croisées (un même prof de maths intervient dans 4 classes) pour qu'un
+// remplissage naïf se bloque à mi-parcours sans solution. Le backtracking
+// revient en arrière quand une affectation locale rend la suite impossible.
 //
-// Ce n'est PAS un solveur CSP g�n�raliste optimis� (type OR-Tools) � c'est
-// volontairement simple et lisible, dimensionn� pour l'�chelle d'un seul
-// �tablissement (quelques dizaines de classes/profs, pas des centaines).
+// Ce n'est PAS un solveur CSP généralisé optimisé (type OR-Tools) — c'est
+// volontairement simple et lisible, dimensionné pour l'échelle d'un seul
+// établissement (quelques dizaines de classes/profs, pas des centaines).
 
 import type {
   Affectation,
@@ -26,7 +26,7 @@ interface BesoinRestant {
   heuresRestantes: number;
 }
 
-const MAX_BACKTRACKS = 200_000; // garde-fou : au-del�, on abandonne cette branche
+const MAX_BACKTRACKS = 200_000; // garde-fou : au-delà, on abandonne cette branche
 
 export function genererEmploiDuTemps(input: GenerationInput): GenerationResult {
   const {
@@ -174,8 +174,8 @@ export function genererEmploiDuTemps(input: GenerationInput): GenerationResult {
       heuresManquantes: 1,
       raison:
         enseignantsPossibles.length === 0
-          ? "Aucun enseignant rattach� � cette mati�re"
-          : "Aucun cr�neau libre compatible (conflit classe/enseignant/plafond horaire)",
+          ? "Aucun enseignant rattaché à cette matière"
+          : "Aucun créneau libre compatible (conflit classe/enseignant/plafond horaire)",
     });
     return tenterPlacerUnite(uniteIndex + 1);
   }
@@ -192,6 +192,11 @@ export function genererEmploiDuTemps(input: GenerationInput): GenerationResult {
       nonSatisfaitsFusionnes.set(clef, { ...ns });
     }
   }
+
+  // Suppress unused variable warnings for maps populated but not read directly
+  void matiereById;
+  void classeById;
+  void enseignants;
 
   return {
     affectations,

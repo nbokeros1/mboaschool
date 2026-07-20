@@ -31,13 +31,13 @@ export default async function MessageriePage({
     .not("departement_disciplinaire", "is", null)
     .order("departement_disciplinaire");
 
-  const departementsUniques: string[] = [
-    ...new Set(
+  const departementsUniques: string[] = Array.from(
+    new Set(
       (departements ?? [])
         .map((d) => d.departement_disciplinaire as string)
         .filter(Boolean)
-    ),
-  ].sort();
+    )
+  ).sort();
 
   // Messages déjà envoyés, les plus récents en premier
   const { data: messages } = await supabase

@@ -1,5 +1,4 @@
 "use client";
-// components/timetable/BoutonGenerer.tsx
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -20,12 +19,12 @@ export function BoutonGenerer({ anneeScolaire }: { anneeScolaire: string }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setErreur(data.error ?? "Échec de la génération");
+        setErreur(data.error ?? "Ã‰chec de la gÃ©nÃ©ration");
         return;
       }
       router.refresh();
-    } catch (e) {
-      setErreur("Erreur réseau — vérifie ta connexion et réessaie");
+    } catch {
+      setErreur("Erreur rÃ©seau â€” vÃ©rifie ta connexion et rÃ©essaie");
     } finally {
       setEnCours(false);
     }
@@ -38,7 +37,7 @@ export function BoutonGenerer({ anneeScolaire }: { anneeScolaire: string }) {
         disabled={enCours}
         className="rounded-md bg-[#007A3D] px-4 py-2 text-white text-sm font-medium disabled:opacity-60"
       >
-        {enCours ? "Génération en cours…" : "Générer l'emploi du temps"}
+        {enCours ? "GÃ©nÃ©ration en coursâ€¦" : "GÃ©nÃ©rer l'emploi du temps"}
       </button>
       {erreur && <p className="mt-2 text-sm text-red-600">{erreur}</p>}
     </div>
