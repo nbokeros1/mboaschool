@@ -44,6 +44,9 @@ export async function GET(request: Request) {
       if (profile?.role === "platform_admin") {
         return NextResponse.redirect(`${origin}/dashboard/admin`);
       }
+      if (profile?.role === "teacher") {
+        return NextResponse.redirect(`${origin}/auth/enseignant-bienvenue`);
+      }
       return NextResponse.redirect(`${origin}/dashboard/ecole`);
     }
   }

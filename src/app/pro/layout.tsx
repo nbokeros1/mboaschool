@@ -5,6 +5,8 @@ const NAV = [
   { href: "/pro/emplois-du-temps",       label: "Emplois du temps" },
   { href: "/pro/pointage/kiosque",       label: "Kiosque présence" },
   { href: "/pro/pointage/historique",    label: "Historique présence" },
+  { href: "/pro/enseignants",            label: "Enseignants" },
+  { href: "/pro/messagerie",             label: "Messagerie" },
 ];
 
 export default function ProLayout({ children }: { children: React.ReactNode }) {
