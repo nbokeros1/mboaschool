@@ -18,28 +18,29 @@ export default async function EnseignantBienvenueePage() {
     redirect("/auth/connexion");
   }
 
-  // Liaison user_id sur la ligne enseignant dont l'email correspond
-  // et dont user_id n'est pas encore renseigné.
+  // Liaison user_id sur TOUTES les lignes enseignants correspondant à cet email
+  // (un enseignant peut enseigner dans plusieurs établissements — toutes les
+  // lignes avec user_id null et cet email sont liées en une seule passe).
   const admin = createAdminClient();
-  const { data: enseignant } = await admin
+  const { data: enseignants } = await admin
     .from("enseignants")
     .select("id, nom, prenom, user_id")
     .eq("email", user.email!)
-    .is("user_id", null)
-    .maybeSingle();
+    .is("user_id", null);
 
   let nom = "";
   let prenom = "";
   let deja_lie = false;
 
-  if (enseignant) {
-    // Première connexion : liaison du compte
+  if (enseignants && enseignants.length > 0) {
+    // Première connexion : liaison de toutes les lignes en une requête
+    const ids = enseignants.map((e) => e.id);
     await admin
       .from("enseignants")
       .update({ user_id: user.id })
-      .eq("id", enseignant.id);
-    nom = enseignant.nom;
-    prenom = enseignant.prenom;
+      .in("id", ids);
+    nom = enseignants[0].nom;
+    prenom = enseignants[0].prenom;
   } else {
     // Peut-être déjà lié (rechargement de page)
     const { data: enseignantLie } = await admin

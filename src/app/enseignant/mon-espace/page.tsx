@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import { AlertTriangle, Globe, BookOpen, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { SelecteurEtablissement } from "@/components/enseignant/SelecteurEtablissement";
 
 export default async function MonEspacePage({
   searchParams,
 }: {
-  searchParams: Promise<{ debut?: string; fin?: string }>;
+  searchParams: Promise<{ debut?: string; fin?: string; eid?: string }>;
 }) {
   const supabase = await createClient();
   const params = await searchParams;
@@ -15,21 +16,30 @@ export default async function MonEspacePage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/connexion");
 
-  // L'enseignant retrouve sa propre fiche via user_id (RLS : enseignants_self_read)
-  const { data: enseignant } = await supabase
+  // Toutes les lignes enseignants liées à ce compte (multi-établissement possible)
+  const { data: enseignants } = await supabase
     .from("enseignants")
-    .select("id, nom, prenom, taux_horaire")
-    .eq("user_id", user.id)
-    .maybeSingle();
+    .select("id, nom, prenom, taux_horaire, etablissement_id, establishments(name)")
+    .eq("user_id", user.id);
 
-  if (!enseignant) {
+  if (!enseignants?.length) {
     return (
       <div className="p-8 text-center text-sm text-gray-500">
         Aucune fiche enseignant liée à ce compte.{" "}
-        <a href="/auth/connexion" className="text-emerald-700 underline">Se reconnecter</a>
+        <a href="/auth/connexion" className="text-emerald-700 underline">
+          Se reconnecter
+        </a>
       </div>
     );
   }
+
+  // Sélection de la ligne active selon le param ?eid= (fallback : première ligne)
+  const enseignant =
+    (params.eid
+      ? enseignants.find((e) => e.id === params.eid)
+      : null) ?? enseignants[0];
+
+  const multiEtab = enseignants.length > 1;
 
   // Plage par défaut : semaine courante
   const today = new Date();
@@ -39,38 +49,41 @@ export default async function MonEspacePage({
   const defaultDebut = lundi.toISOString().slice(0, 10);
 
   const debut = params.debut ?? defaultDebut;
-  const fin = params.fin ?? defaultFin;
+  const fin   = params.fin   ?? defaultFin;
 
-  // Heures totales via la fonction SQL (supporte maintenant l'accès enseignant)
+  // Heures via RPC — p_etablissement_id assure que seul cet établissement est compté
   const { data: totalHeures } = await supabase.rpc("calculer_heures_enseignant", {
-    p_enseignant_id: enseignant.id,
-    p_date_debut: debut,
-    p_date_fin: fin,
+    p_enseignant_id:    enseignant.id,
+    p_date_debut:       debut,
+    p_date_fin:         fin,
+    p_etablissement_id: enseignant.etablissement_id,
   });
 
-  // Heures du mois courant (pour comparaison)
   const debutMois = new Date(today.getFullYear(), today.getMonth(), 1)
     .toISOString()
     .slice(0, 10);
   const { data: heuresMois } = await supabase.rpc("calculer_heures_enseignant", {
-    p_enseignant_id: enseignant.id,
-    p_date_debut: debutMois,
-    p_date_fin: defaultFin,
+    p_enseignant_id:    enseignant.id,
+    p_date_debut:       debutMois,
+    p_date_fin:         defaultFin,
+    p_etablissement_id: enseignant.etablissement_id,
   });
 
-  // Pointages de la période — RLS : pointages_self_read
+  // Pointages — filtrés par établissement sélectionné
   const { data: pointages } = await supabase
     .from("pointages")
     .select("id, type, horodatage, photo_path")
     .eq("enseignant_id", enseignant.id)
+    .eq("etablissement_id", enseignant.etablissement_id)
     .gte("horodatage", `${debut}T00:00:00`)
     .lte("horodatage", `${fin}T23:59:59`)
     .order("horodatage", { ascending: true });
 
-  // Messages visibles pour cet enseignant (RLS filtre global + département)
+  // Messages — filtrés par établissement sélectionné (RLS fait aussi le filtrage)
   const { data: messages } = await supabase
     .from("messages")
     .select("id, canal, departement_disciplinaire, titre, contenu, created_at")
+    .eq("etablissement_id", enseignant.etablissement_id)
     .order("created_at", { ascending: false })
     .limit(30);
 
@@ -103,10 +116,14 @@ export default async function MonEspacePage({
 
   const heures = Number(totalHeures ?? 0);
   const heuresMoisVal = Number(heuresMois ?? 0);
-  const salaireSemaine = enseignant.taux_horaire && heures > 0
-    ? Math.round(heures * enseignant.taux_horaire) : null;
-  const salaireMois = enseignant.taux_horaire && heuresMoisVal > 0
-    ? Math.round(heuresMoisVal * enseignant.taux_horaire) : null;
+  const salaireSemaine =
+    enseignant.taux_horaire && heures > 0
+      ? Math.round(heures * enseignant.taux_horaire)
+      : null;
+  const salaireMois =
+    enseignant.taux_horaire && heuresMoisVal > 0
+      ? Math.round(heuresMoisVal * enseignant.taux_horaire)
+      : null;
 
   function formatH(h: number) {
     const hh = Math.floor(h);
@@ -114,10 +131,18 @@ export default async function MonEspacePage({
     return `${hh}h${mm.toString().padStart(2, "0")}`;
   }
 
+  // Options pour le sélecteur d'établissement
+  const optionsSelecteur = enseignants.map((e) => ({
+    enseignantId: e.id,
+    nomEtablissement:
+      (e.establishments as unknown as { name: string } | null)?.name ??
+      `Établissement ${e.etablissement_id.slice(0, 8)}`,
+  }));
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       {/* En-tête */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
           Mon espace présence
         </h1>
@@ -125,6 +150,16 @@ export default async function MonEspacePage({
           {enseignant.prenom} {enseignant.nom}
         </p>
       </div>
+
+      {/* Sélecteur d'établissement — visible seulement si multi-établissement */}
+      {multiEtab && (
+        <SelecteurEtablissement
+          etablissements={optionsSelecteur}
+          selectedEnseignantId={enseignant.id}
+          debut={debut}
+          fin={fin}
+        />
+      )}
 
       {/* Résumé rapide */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
@@ -163,6 +198,8 @@ export default async function MonEspacePage({
 
       {/* Filtre période */}
       <form method="GET" className="flex flex-wrap gap-2 mb-5 items-center">
+        {/* Préserve l'établissement sélectionné lors du changement de période */}
+        <input type="hidden" name="eid" value={enseignant.id} />
         <span className="text-sm text-gray-500 font-medium">Période :</span>
         <input
           type="date"
@@ -195,9 +232,14 @@ export default async function MonEspacePage({
             </span>{" "}
             {Array.from(incompleteDays)
               .sort()
-              .map((d) => new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }))
+              .map((d) =>
+                new Date(d).toLocaleDateString("fr-FR", {
+                  day: "2-digit",
+                  month: "short",
+                })
+              )
               .join(", ")}
-            . Ces heures ne sont pas comptabilisées. Signalez l'oubli au directeur.
+            . Ces heures ne sont pas comptabilisées. Signalez l&apos;oubli au directeur.
           </div>
         </div>
       )}
@@ -232,8 +274,14 @@ export default async function MonEspacePage({
                   >
                     <td className="p-3">
                       <span className="flex items-center gap-1.5 text-gray-700 font-medium">
-                        {incomplete && <AlertTriangle size={12} className="text-amber-500 shrink-0" />}
-                        {d.toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short" })}
+                        {incomplete && (
+                          <AlertTriangle size={12} className="text-amber-500 shrink-0" />
+                        )}
+                        {d.toLocaleDateString("fr-FR", {
+                          weekday: "short",
+                          day: "2-digit",
+                          month: "short",
+                        })}
                       </span>
                     </td>
                     <td className="p-3 font-mono font-semibold text-gray-900">
@@ -247,7 +295,11 @@ export default async function MonEspacePage({
                             : "bg-orange-100 text-orange-700"
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${p.type === "arrivee" ? "bg-emerald-500" : "bg-orange-500"}`} />
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            p.type === "arrivee" ? "bg-emerald-500" : "bg-orange-500"
+                          }`}
+                        />
                         {p.type === "arrivee" ? "Arrivée" : "Départ"}
                       </span>
                     </td>

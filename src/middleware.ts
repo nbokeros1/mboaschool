@@ -32,34 +32,67 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  // Rediriger vers login si non connecté et accès à /dashboard
+  // ── /dashboard/* ──────────────────────────────────────────────────────────
   if (path.startsWith("/dashboard")) {
     if (!user) {
       return NextResponse.redirect(new URL("/auth/connexion", request.url));
     }
-
-    // Vérifier le rôle pour /dashboard/admin
     if (path.startsWith("/dashboard/admin")) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
-
       if (profile?.role !== "platform_admin") {
         return NextResponse.redirect(new URL("/dashboard/ecole", request.url));
       }
     }
   }
 
-  // Rediriger vers le dashboard si déjà connecté et accès aux pages auth
+  // ── /pro/* et API Pro ─────────────────────────────────────────────────────
+  // La page /pro/acces-restreint est explicitement exclue (sinon boucle infinie).
+  const isProPage =
+    path.startsWith("/pro/") && path !== "/pro/acces-restreint";
+  const isProApi =
+    path.startsWith("/api/timetable/") ||
+    path.startsWith("/api/pointage/") ||
+    path.startsWith("/api/messagerie/") ||
+    path.startsWith("/api/enseignants/");
+
+  if (isProPage || isProApi) {
+    if (!user) {
+      if (isProApi) {
+        return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/auth/connexion", request.url));
+    }
+
+    const { data: etablissement } = await supabase
+      .from("establishments")
+      .select("forfait")
+      .eq("owner_id", user.id)
+      .maybeSingle();
+
+    if (etablissement?.forfait !== "pro") {
+      if (isProApi) {
+        return NextResponse.json(
+          { error: "Cette fonctionnalité nécessite le forfait Pro" },
+          { status: 403 }
+        );
+      }
+      return NextResponse.redirect(
+        new URL("/pro/acces-restreint", request.url)
+      );
+    }
+  }
+
+  // ── /auth/* si déjà connecté ──────────────────────────────────────────────
   if (path.startsWith("/auth") && user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
-
     if (profile?.role === "platform_admin") {
       return NextResponse.redirect(new URL("/dashboard/admin", request.url));
     }
@@ -70,5 +103,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/auth/:path*",
+    "/pro/:path*",
+    "/api/timetable/:path*",
+    "/api/pointage/:path*",
+    "/api/messagerie/:path*",
+    "/api/enseignants/:path*",
+  ],
 };

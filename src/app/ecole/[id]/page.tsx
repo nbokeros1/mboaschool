@@ -107,6 +107,20 @@ export default function SchoolPage() {
     load();
   }, [id]);
 
+  const heroImages = useMemo(() => {
+    if (images.length > 0) return images.map((img: any) => img.url as string);
+    if (school?.cover_image_url) return [school.cover_image_url as string];
+    return [] as string[];
+  }, [images, school?.cover_image_url]);
+
+  useEffect(() => {
+    if (heroImages.length <= 1) return;
+    timerRef.current = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [heroImages.length]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f9f7f2]">
@@ -135,20 +149,6 @@ export default function SchoolPage() {
       </div>
     );
   }
-
-  const heroImages = useMemo(() => {
-    if (images.length > 0) return images.map((img: any) => img.url as string);
-    if (school?.cover_image_url) return [school.cover_image_url as string];
-    return [] as string[];
-  }, [images, school?.cover_image_url]);
-
-  useEffect(() => {
-    if (heroImages.length <= 1) return;
-    timerRef.current = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [heroImages.length]);
 
   function goToSlide(i: number) {
     setActiveSlide(i);

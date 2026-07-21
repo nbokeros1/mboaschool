@@ -17,6 +17,7 @@ export type SchoolData = {
   main_category: string;
   is_verified: boolean;
   subscription_plan: string;
+  forfait: "gratuit" | "gere" | "pro";
 };
 
 export type AuthUser = {
@@ -42,7 +43,7 @@ export function useSchool() {
 
       const { data } = await supabase
         .from("establishments")
-        .select("id, name, city, neighborhood, phone, email, whatsapp, website, description, address, main_category, is_verified, subscription_plan")
+        .select("id, name, city, neighborhood, phone, email, whatsapp, website, description, address, main_category, is_verified, subscription_plan, forfait")
         .eq("owner_id", authUser.id)
         .single();
 

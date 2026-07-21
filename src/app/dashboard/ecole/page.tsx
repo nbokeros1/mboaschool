@@ -16,6 +16,8 @@ import {
   Bell,
   CreditCard,
   School,
+  Lock,
+  Sparkles,
 } from "lucide-react";
 
 export default function DashboardEcoleHome() {
@@ -115,6 +117,41 @@ export default function DashboardEcoleHome() {
           );
         })}
       </div>
+
+      {/* Module Pro */}
+      {school.forfait === "pro" ? (
+        <Link
+          href="/pro/emplois-du-temps"
+          className="flex items-center justify-between mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 hover:bg-emerald-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Sparkles size={18} className="text-emerald-600" />
+            <div>
+              <p className="text-sm font-bold text-emerald-900">Écoles237 Pro</p>
+              <p className="text-xs text-emerald-700">Emplois du temps · Pointage · Messagerie interne</p>
+            </div>
+          </div>
+          <ArrowRight size={16} className="text-emerald-600 shrink-0" />
+        </Link>
+      ) : (
+        <div className="flex items-start justify-between mb-6 rounded-2xl border border-[#ebebeb] bg-white px-6 py-4">
+          <div className="flex items-start gap-3">
+            <Lock size={18} className="text-slate-300 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-[#0a0a0a]">Écoles237 Pro</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Emplois du temps, pointage des enseignants et messagerie interne.
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Contactez-nous pour activer le <strong className="text-slate-600">forfait Pro</strong>.
+              </p>
+            </div>
+          </div>
+          <span className="shrink-0 text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-400 px-2.5 py-1 rounded-full ml-4">
+            Pro
+          </span>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent applications */}
