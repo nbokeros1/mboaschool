@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
@@ -25,23 +24,12 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-const LocalSchoolMap = dynamic(() => import("@/components/LocalSchoolMap"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-slate-100">
-      <span className="text-xs text-slate-400 font-medium">Chargement de la carte…</span>
-    </div>
-  ),
-});
-
 const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80",
   "https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&w=800&q=80",
   "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80",
   "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=800&q=80",
 ];
-
-const DEFAULT_CENTER = { lat: 4.0511, lng: 9.7679 }; // Douala
 
 // ─── Data & Types ────────────────────────────────────────────────────────────
 
@@ -253,16 +241,6 @@ export default function HomePage() {
     [schools]
   );
 
-  const mapCenter = userLocation ?? DEFAULT_CENTER;
-
-  const nearbySchools = useMemo(() => {
-    const withCoords = schools.filter((s): s is School & { lat: number; lng: number } => s.lat != null && s.lng != null);
-    if (!userLocation) return withCoords.slice(0, 12);
-    return withCoords
-      .filter((s) => haversineKm(userLocation.lat, userLocation.lng, s.lat, s.lng) <= Number(radius))
-      .slice(0, 30);
-  }, [schools, userLocation, radius]);
-
   const filtered = schools.filter((s) => {
     if (activeCategory !== "all" && s.category !== activeCategory) return false;
     if (activeSubcategory !== "all" && s.subcategory.toLowerCase() !== activeSubcategory.toLowerCase()) return false;
@@ -279,7 +257,6 @@ export default function HomePage() {
   });
 
   const compareSchools = schools.filter((s) => compare.includes(s.id)).slice(0, 3);
-  const activeCatObj = categories.find((c) => c.key === activeCategory);
 
   return (
     <div className="min-h-screen bg-[#f9f7f2] text-[#0a0a0a]">
@@ -367,7 +344,7 @@ export default function HomePage() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────────────── */}
-      <section className="relative pt-[60px] pb-40 bg-[linear-gradient(165deg,#03130d_0%,#0a3d28_25%,#0f9d68_65%,#37ac80_71%,#5fbc97_77%,#87cbaf_83%,#b0dbc7_89%,#d8eade_95%,#f9f7f2_100%)] text-white overflow-hidden">
+      <section className="relative pt-[60px] pb-24 bg-[linear-gradient(165deg,#03130d_0%,#0a3d28_25%,#0f9d68_60%,#37ac80_67%,#5fbc97_74%,#87cbaf_81%,#b0dbc7_88%,#d8eade_95%,#ffffff_100%)] text-white overflow-hidden">
         <div className="relative max-w-screen-xl mx-auto px-5 grid lg:grid-cols-[0.9fr_1.4fr] items-center gap-10 py-16 lg:py-20">
 
           <div className="py-20 lg:py-0">
@@ -420,13 +397,32 @@ export default function HomePage() {
                 )}
               </div>
 
-              <div className="rounded-xl overflow-hidden h-[200px] mb-3 border border-slate-200">
-                <LocalSchoolMap
-                  center={mapCenter}
-                  userLocation={userLocation}
-                  radiusKm={Number(radius)}
-                  schools={nearbySchools}
-                />
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Ville</label>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs font-semibold bg-white focus:outline-none"
+                  >
+                    {cities.map((c) => (
+                      <option key={c} value={c}>{c === "all" ? "Toutes les villes" : c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Rayon de recherche</label>
+                  <select
+                    value={radius}
+                    onChange={(e) => setRadius(e.target.value)}
+                    className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs font-semibold bg-white focus:outline-none"
+                  >
+                    <option value="2">2 km</option>
+                    <option value="5">5 km</option>
+                    <option value="10">10 km</option>
+                    <option value="20">20 km</option>
+                  </select>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -435,45 +431,14 @@ export default function HomePage() {
                   className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${useLocation ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                 >
                   <Navigation size={13} />
-                  {useLocation ? "Position active" : "Écoles autour de moi"}
+                  {useLocation ? "Position active" : "Utiliser ma position"}
                 </button>
-                <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="border border-slate-200 rounded-lg px-2 py-2 text-xs font-semibold bg-white focus:outline-none max-w-[110px]"
+                <button
+                  onClick={() => { setCity("all"); setUseLocation(false); setUserLocation(null); setActiveCategory("all"); setActiveSubcategory("all"); setQuery(""); }}
+                  className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                 >
-                  {cities.map((c) => (
-                    <option key={c} value={c}>{c === "all" ? "Toutes les villes" : c}</option>
-                  ))}
-                </select>
-                <select
-                  value={radius}
-                  onChange={(e) => setRadius(e.target.value)}
-                  className="border border-slate-200 rounded-lg px-2 py-2 text-xs font-semibold bg-white focus:outline-none"
-                >
-                  <option value="2">2 km</option>
-                  <option value="5">5 km</option>
-                  <option value="10">10 km</option>
-                  <option value="20">20 km</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="flex items-center gap-6 mt-8">
-              <div>
-                <p className="text-2xl font-black">{schools.length || "—"}</p>
-                <p className="text-xs text-slate-500 mt-0.5">Établissements</p>
-              </div>
-              <div className="w-px h-8 bg-white/10" />
-              <div>
-                <p className="text-2xl font-black">{cities.length - 1 || "—"}</p>
-                <p className="text-xs text-slate-500 mt-0.5">Villes</p>
-              </div>
-              <div className="w-px h-8 bg-white/10" />
-              <div>
-                <p className="text-2xl font-black">Gratuit</p>
-                <p className="text-xs text-slate-500 mt-0.5">Pour les parents</p>
+                  Réinitialiser
+                </button>
               </div>
             </div>
           </div>
@@ -541,27 +506,6 @@ export default function HomePage() {
             </button>
           ))}
         </div>
-
-        {/* Sub-categories when a category is active */}
-        {activeCatObj && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 [&::-webkit-scrollbar]:hidden">
-            <button
-              onClick={() => setActiveSubcategory("all")}
-              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-all shrink-0 ${activeSubcategory === "all" ? "bg-emerald-600 text-white border-emerald-600" : "border-[#ddd] text-slate-500 hover:border-slate-400"}`}
-            >
-              Tous
-            </button>
-            {activeCatObj.subcategories.map((sub) => (
-              <button
-                key={sub}
-                onClick={() => setActiveSubcategory(sub)}
-                className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-all shrink-0 ${activeSubcategory === sub ? "bg-emerald-600 text-white border-emerald-600" : "border-[#ddd] text-slate-500 hover:border-slate-400"}`}
-              >
-                {sub}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Filters row */}
         <div className="flex items-center gap-3 mb-8 flex-wrap">
