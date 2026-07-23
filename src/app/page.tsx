@@ -367,31 +367,44 @@ export default function HomePage() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────────────── */}
-      <section className="pt-[60px] bg-gradient-to-br from-[#050818] via-[#0d2b6b] to-[#2f6fed] text-white overflow-hidden">
-        <div className="max-w-screen-xl mx-auto px-5 grid lg:grid-cols-[1fr_480px] min-h-[88vh] items-center gap-10">
+      <section className="relative pt-[60px] pb-40 bg-[linear-gradient(165deg,#03130d_0%,#0a3d28_25%,#0f9d68_65%,#37ac80_71%,#5fbc97_77%,#87cbaf_83%,#b0dbc7_89%,#d8eade_95%,#f9f7f2_100%)] text-white overflow-hidden">
+        <div className="relative max-w-screen-xl mx-auto px-5 grid lg:grid-cols-[0.9fr_1.4fr] items-center gap-10 py-16 lg:py-20">
 
           <div className="py-20 lg:py-0">
             <div className="flex items-center gap-2 mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
               <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-              <span className="ml-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
+              <span className="ml-2 text-sm font-semibold tracking-[0.15em] uppercase text-slate-300">
                 Plateforme éducative · Cameroun
               </span>
             </div>
 
-            <h1 className="text-[clamp(3rem,8vw,5.5rem)] font-black leading-[0.92] tracking-tight mb-7">
-              L'école de<br />
-              vos enfants.<br />
-              <span className="text-emerald-400">Trouvée.</span>
-            </h1>
-
-            <p className="text-slate-400 text-base lg:text-lg max-w-[420px] mb-8 leading-relaxed">
+            <p className="text-slate-400 text-base lg:text-lg max-w-[420px] mb-8 leading-relaxed mt-6">
               Comparez les établissements, consultez les frais et les infrastructures, et postulez en ligne en quelques minutes.
             </p>
 
             {/* Local search card with map */}
             <div className="bg-white text-[#0a0a0a] rounded-2xl p-4 max-w-[500px] shadow-xl">
+              {/* Category quick filters */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-3 [&::-webkit-scrollbar]:hidden">
+                <button
+                  onClick={() => { setActiveCategory("all"); setActiveSubcategory("all"); }}
+                  className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors shrink-0 ${activeCategory === "all" ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "border-slate-200 text-slate-500 hover:border-slate-300"}`}
+                >
+                  Tout voir
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat.key}
+                    onClick={() => { setActiveCategory(cat.key); setActiveSubcategory("all"); }}
+                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors shrink-0 ${activeCategory === cat.key ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "border-slate-200 text-slate-500 hover:border-slate-300"}`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 mb-3 focus-within:border-emerald-400 transition-colors">
                 <Search size={15} className="text-slate-400 shrink-0" />
                 <input
@@ -407,7 +420,7 @@ export default function HomePage() {
                 )}
               </div>
 
-              <div className="rounded-xl overflow-hidden h-[220px] mb-3 border border-slate-200">
+              <div className="rounded-xl overflow-hidden h-[200px] mb-3 border border-slate-200">
                 <LocalSchoolMap
                   center={mapCenter}
                   userLocation={userLocation}
@@ -424,6 +437,15 @@ export default function HomePage() {
                   <Navigation size={13} />
                   {useLocation ? "Position active" : "Écoles autour de moi"}
                 </button>
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="border border-slate-200 rounded-lg px-2 py-2 text-xs font-semibold bg-white focus:outline-none max-w-[110px]"
+                >
+                  {cities.map((c) => (
+                    <option key={c} value={c}>{c === "all" ? "Toutes les villes" : c}</option>
+                  ))}
+                </select>
                 <select
                   value={radius}
                   onChange={(e) => setRadius(e.target.value)}
@@ -456,21 +478,20 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Hero image carousel */}
-          <div className="hidden lg:block relative h-full min-h-[88vh]">
+          {/* Hero image carousel — landscape card */}
+          <div className="hidden lg:block relative w-full aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl">
             {HERO_IMAGES.map((src, i) => (
               <img
                 key={src}
                 src={src}
                 alt=""
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${i === heroSlide ? "opacity-50" : "opacity-0"}`}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${i === heroSlide ? "opacity-100" : "opacity-0"}`}
               />
             ))}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#050818] via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050818] via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#03130d]/80 via-transparent to-transparent" />
 
             {/* Carousel dots */}
-            <div className="absolute top-6 right-6 flex gap-1.5 z-10">
+            <div className="absolute top-5 right-5 flex gap-1.5 z-10">
               {HERO_IMAGES.map((_, i) => (
                 <button
                   key={i}
@@ -482,14 +503,16 @@ export default function HomePage() {
             </div>
 
             {/* Floating card */}
-            <div className="absolute bottom-10 right-0 left-8 bg-white text-[#0a0a0a] rounded-2xl p-5">
-              <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-4">Pour votre école</p>
-              <p className="font-black text-lg leading-tight mb-3">Votre page visible dans tout le Cameroun.</p>
+            <div className="absolute bottom-5 left-5 right-5 bg-white text-[#0a0a0a] rounded-2xl p-5 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-2">Pour votre école</p>
+                <p className="font-black text-base leading-tight">Votre page visible dans tout le Cameroun.</p>
+              </div>
               <Link
                 href="/auth/inscription"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-600 transition-colors"
+                className="shrink-0 inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-600 transition-colors"
               >
-                Inscrire mon établissement
+                Inscrire
                 <ArrowRight size={15} />
               </Link>
             </div>
