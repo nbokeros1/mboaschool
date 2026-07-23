@@ -344,101 +344,62 @@ export default function HomePage() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────────────── */}
-      <section className="relative pt-[60px] pb-24 bg-[linear-gradient(165deg,#03130d_0%,#0a3d28_25%,#0f9d68_60%,#37ac80_67%,#5fbc97_74%,#87cbaf_81%,#b0dbc7_88%,#d8eade_95%,#ffffff_100%)] text-white overflow-hidden">
-        <div className="relative max-w-screen-xl mx-auto px-5 grid lg:grid-cols-[0.9fr_1.4fr] items-center gap-10 py-16 lg:py-20">
+      <section className="relative pt-[60px] pb-24 bg-[linear-gradient(165deg,#03130d_0%,#0a3d28_15%,#0f9d68_35%,#2fb086_50%,#5fc29e_60%,#8ed4b8_70%,#c3e9d7_80%,#eaf6f0_88%,#ffffff_100%)] text-white overflow-hidden">
+        <div className="relative max-w-screen-xl mx-auto px-5 pt-16 lg:pt-20">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+            <span className="ml-2 text-sm font-semibold tracking-[0.15em] uppercase text-slate-300">
+              Plateforme éducative · Cameroun
+            </span>
+          </div>
+        </div>
 
-          <div className="py-20 lg:py-0">
-            <div className="flex items-center gap-2 mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-              <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-              <span className="ml-2 text-sm font-semibold tracking-[0.15em] uppercase text-slate-300">
-                Plateforme éducative · Cameroun
-              </span>
-            </div>
+        <div className="relative max-w-screen-xl mx-auto px-5 grid lg:grid-cols-[0.9fr_1.4fr] items-stretch gap-10 pb-16 lg:pb-20">
 
-            <p className="text-slate-400 text-base lg:text-lg max-w-[420px] mb-8 leading-relaxed mt-6">
-              Comparez les établissements, consultez les frais et les infrastructures, et postulez en ligne en quelques minutes.
-            </p>
+          <div className="flex flex-col py-10 lg:py-0">
+            {/* Search form card */}
+            <div className="flex-1 rounded-3xl p-[2px] bg-gradient-to-br from-red-500 via-yellow-400 to-yellow-300 shadow-2xl">
+              <div className="bg-white text-[#0a0a0a] rounded-[22px] h-full p-6 lg:p-8 flex flex-col justify-center gap-4">
+                <div>
+                  <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Recherche rapide</p>
+                  <h2 className="text-2xl font-black leading-tight">Trouvez l'école idéale près de chez vous.</h2>
+                </div>
 
-            {/* Local search card with map */}
-            <div className="bg-white text-[#0a0a0a] rounded-2xl p-4 max-w-[500px] shadow-xl">
-              {/* Category quick filters */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-3 [&::-webkit-scrollbar]:hidden">
-                <button
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus-within:border-emerald-400 transition-colors">
+                  <Search size={16} className="text-slate-400 shrink-0" />
+                  <input
+                    className="bg-transparent outline-none text-sm flex-1 min-w-0 placeholder-slate-400"
+                    placeholder="Nom, ville, niveau, type d'établissement…"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                  {query && (
+                    <button onClick={() => setQuery("")} className="text-slate-400 hover:text-slate-700">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-semibold bg-white focus:outline-none focus:border-emerald-400 transition-colors"
+                >
+                  {cities.map((c) => (
+                    <option key={c} value={c}>{c === "all" ? "Toutes les villes" : c}</option>
+                  ))}
+                </select>
+
+                <Link
+                  href="/categorie/garderie"
                   onClick={() => { setActiveCategory("all"); setActiveSubcategory("all"); }}
-                  className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors shrink-0 ${activeCategory === "all" ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "border-slate-200 text-slate-500 hover:border-slate-300"}`}
+                  className="w-full bg-[#0a0a0a] text-white rounded-xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
                 >
-                  Tout voir
-                </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat.key}
-                    onClick={() => { setActiveCategory(cat.key); setActiveSubcategory("all"); }}
-                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors shrink-0 ${activeCategory === cat.key ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "border-slate-200 text-slate-500 hover:border-slate-300"}`}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 mb-3 focus-within:border-emerald-400 transition-colors">
-                <Search size={15} className="text-slate-400 shrink-0" />
-                <input
-                  className="bg-transparent outline-none text-sm flex-1 min-w-0 placeholder-slate-400"
-                  placeholder="Nom, ville, niveau, type d'établissement…"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                {query && (
-                  <button onClick={() => setQuery("")} className="text-slate-400 hover:text-slate-700">
-                    <X size={13} />
-                  </button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Ville</label>
-                  <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs font-semibold bg-white focus:outline-none"
-                  >
-                    {cities.map((c) => (
-                      <option key={c} value={c}>{c === "all" ? "Toutes les villes" : c}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Rayon de recherche</label>
-                  <select
-                    value={radius}
-                    onChange={(e) => setRadius(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs font-semibold bg-white focus:outline-none"
-                  >
-                    <option value="2">2 km</option>
-                    <option value="5">5 km</option>
-                    <option value="10">10 km</option>
-                    <option value="20">20 km</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleLocationToggle}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${useLocation ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-                >
-                  <Navigation size={13} />
-                  {useLocation ? "Position active" : "Utiliser ma position"}
-                </button>
-                <button
-                  onClick={() => { setCity("all"); setUseLocation(false); setUserLocation(null); setActiveCategory("all"); setActiveSubcategory("all"); setQuery(""); }}
-                  className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-                >
-                  Réinitialiser
-                </button>
+                  Rechercher
+                  <ArrowRight size={16} />
+                </Link>
               </div>
             </div>
           </div>
@@ -454,6 +415,14 @@ export default function HomePage() {
               />
             ))}
             <div className="absolute inset-0 bg-gradient-to-t from-[#03130d]/80 via-transparent to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#03130d]/70 to-transparent" />
+
+            {/* Overlay caption */}
+            <div className="absolute top-6 left-6 right-24 z-10">
+              <p className="text-white text-lg font-semibold leading-snug drop-shadow">
+                Comparez les établissements, consultez les frais et les infrastructures, et postulez en ligne en quelques minutes.
+              </p>
+            </div>
 
             {/* Carousel dots */}
             <div className="absolute top-5 right-5 flex gap-1.5 z-10">
