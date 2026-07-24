@@ -24,6 +24,13 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
+const HERO_IMAGES = [
+  "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1497486751825-1233686d5d80?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=800&q=80",
+];
+
 // ─── Data & Types ────────────────────────────────────────────────────────────
 
 const categories = [
@@ -180,6 +187,14 @@ export default function HomePage() {
   const [compare, setCompare] = useState<string[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [heroSlide, setHeroSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroSlide((i) => (i + 1) % HERO_IMAGES.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -242,7 +257,6 @@ export default function HomePage() {
   });
 
   const compareSchools = schools.filter((s) => compare.includes(s.id)).slice(0, 3);
-  const activeCatObj = categories.find((c) => c.key === activeCategory);
 
   return (
     <div className="min-h-screen bg-[#f9f7f2] text-[#0a0a0a]">
@@ -330,83 +344,109 @@ export default function HomePage() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────────────── */}
-      <section className="pt-[60px] bg-[#0a0f0d] text-white overflow-hidden">
-        <div className="max-w-screen-xl mx-auto px-5 grid lg:grid-cols-[1fr_480px] min-h-[88vh] items-center gap-10">
+      <section className="relative pt-[60px] pb-6 bg-[radial-gradient(ellipse_farthest-corner_at_top_left,#03130d_0%,#0a3d28_12%,#0f9d68_30%,#2fb086_45%,#5fc29e_55%,#8ed4b8_65%,#c3e9d7_75%,#eaf6f0_85%,#ffffff_100%)] text-white overflow-hidden">
+        <div className="relative max-w-screen-xl mx-auto px-5 pt-16 lg:pt-20">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+            <span className="ml-2 text-sm font-semibold tracking-[0.15em] uppercase text-slate-300">
+              Plateforme éducative · Cameroun
+            </span>
+          </div>
+        </div>
 
-          <div className="py-20 lg:py-0">
-            <div className="flex items-center gap-2 mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-              <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-              <span className="ml-2 text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
-                Plateforme éducative · Cameroun
-              </span>
-            </div>
+        <div className="relative max-w-screen-xl mx-auto px-5 grid lg:grid-cols-[0.9fr_1.4fr] items-stretch gap-10 pb-16 lg:pb-20">
 
-            <h1 className="text-[clamp(3rem,8vw,5.5rem)] font-black leading-[0.92] tracking-tight mb-7">
-              L'école de<br />
-              vos enfants.<br />
-              <span className="text-emerald-400">Trouvée.</span>
-            </h1>
+          <div className="flex flex-col py-10 lg:py-0">
+            {/* Search form card */}
+            <div className="flex-1 rounded-3xl p-[2px] bg-gradient-to-br from-red-500 via-yellow-400 to-yellow-300 shadow-2xl">
+              <div className="bg-white text-[#0a0a0a] rounded-[22px] h-full p-6 lg:p-8 flex flex-col justify-center gap-4">
+                <div>
+                  <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">Recherche rapide</p>
+                  <h2 className="text-2xl font-black leading-tight">Trouvez l'école idéale près de chez vous.</h2>
+                </div>
 
-            <p className="text-slate-400 text-base lg:text-lg max-w-[420px] mb-10 leading-relaxed">
-              Comparez les établissements, consultez les frais et les infrastructures, et postulez en ligne en quelques minutes.
-            </p>
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 focus-within:border-emerald-400 transition-colors">
+                  <Search size={16} className="text-slate-400 shrink-0" />
+                  <input
+                    className="bg-transparent outline-none text-sm flex-1 min-w-0 placeholder-slate-400"
+                    placeholder="Nom, ville, niveau, type d'établissement…"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                  {query && (
+                    <button onClick={() => setQuery("")} className="text-slate-400 hover:text-slate-700">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
 
-            {/* Inline search */}
-            <div className="flex items-center gap-2 max-w-[500px] bg-white/8 border border-white/12 rounded-xl px-4 py-3 focus-within:border-emerald-500/50 transition-colors">
-              <Search size={16} className="text-slate-500 shrink-0" />
-              <input
-                className="bg-transparent outline-none text-white placeholder-slate-500 text-sm flex-1 min-w-0"
-                placeholder="Nom, ville, niveau, type d'établissement…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              {query && (
-                <button onClick={() => setQuery("")} className="text-slate-500 hover:text-white">
-                  <X size={14} />
-                </button>
-              )}
-            </div>
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-semibold bg-white focus:outline-none focus:border-emerald-400 transition-colors"
+                >
+                  {cities.map((c) => (
+                    <option key={c} value={c}>{c === "all" ? "Toutes les villes" : c}</option>
+                  ))}
+                </select>
 
-            {/* Stats */}
-            <div className="flex items-center gap-6 mt-10">
-              <div>
-                <p className="text-2xl font-black">{schools.length || "—"}</p>
-                <p className="text-xs text-slate-500 mt-0.5">Établissements</p>
-              </div>
-              <div className="w-px h-8 bg-white/10" />
-              <div>
-                <p className="text-2xl font-black">{cities.length - 1 || "—"}</p>
-                <p className="text-xs text-slate-500 mt-0.5">Villes</p>
-              </div>
-              <div className="w-px h-8 bg-white/10" />
-              <div>
-                <p className="text-2xl font-black">Gratuit</p>
-                <p className="text-xs text-slate-500 mt-0.5">Pour les parents</p>
+                <Link
+                  href="/categorie/garderie"
+                  onClick={() => { setActiveCategory("all"); setActiveSubcategory("all"); }}
+                  className="w-full bg-[#0a0a0a] text-white rounded-xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
+                >
+                  Rechercher
+                  <ArrowRight size={16} />
+                </Link>
               </div>
             </div>
           </div>
 
-          {/* Hero image */}
-          <div className="hidden lg:block relative h-full min-h-[88vh]">
-            <img
-              src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80"
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-50"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0f0d] via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f0d] via-transparent to-transparent" />
+          {/* Hero image carousel — landscape card */}
+          <div className="hidden lg:block relative w-full aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl">
+            {HERO_IMAGES.map((src, i) => (
+              <img
+                key={src}
+                src={src}
+                alt=""
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${i === heroSlide ? "opacity-100" : "opacity-0"}`}
+              />
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#03130d]/80 via-transparent to-transparent" />
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#03130d]/70 to-transparent" />
+
+            {/* Overlay caption */}
+            <div className="absolute top-6 left-6 right-24 z-10">
+              <p className="text-white text-lg font-semibold leading-snug drop-shadow">
+                Comparez les établissements, consultez les frais et les infrastructures, et postulez en ligne en quelques minutes.
+              </p>
+            </div>
+
+            {/* Carousel dots */}
+            <div className="absolute top-5 right-5 flex gap-1.5 z-10">
+              {HERO_IMAGES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setHeroSlide(i)}
+                  className={`h-1.5 rounded-full transition-all ${i === heroSlide ? "w-6 bg-white" : "w-1.5 bg-white/40 hover:bg-white/60"}`}
+                  aria-label={`Image ${i + 1}`}
+                />
+              ))}
+            </div>
 
             {/* Floating card */}
-            <div className="absolute bottom-10 right-0 left-8 bg-white text-[#0a0a0a] rounded-2xl p-5">
-              <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-4">Pour votre école</p>
-              <p className="font-black text-lg leading-tight mb-3">Votre page visible dans tout le Cameroun.</p>
+            <div className="absolute bottom-5 left-5 right-5 bg-white text-[#0a0a0a] rounded-2xl p-5 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-2">Pour votre école</p>
+                <p className="font-black text-base leading-tight">Votre page visible dans tout le Cameroun.</p>
+              </div>
               <Link
                 href="/auth/inscription"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-600 transition-colors"
+                className="shrink-0 inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-600 transition-colors"
               >
-                Inscrire mon établissement
+                Inscrire
                 <ArrowRight size={15} />
               </Link>
             </div>
@@ -414,48 +454,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── MAIN CONTENT ───────────────────────────────────────────── */}
-      <main className="max-w-screen-xl mx-auto px-5 py-12">
-
-        {/* Category pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 [&::-webkit-scrollbar]:hidden">
-          <button
-            onClick={() => { setActiveCategory("all"); setActiveSubcategory("all"); }}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition-all shrink-0 ${activeCategory === "all" ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "border-[#ddd] text-slate-600 hover:border-[#aaa]"}`}
-          >
-            Tout voir
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.key}
-              onClick={() => { setActiveCategory(cat.key); setActiveSubcategory("all"); }}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition-all shrink-0 ${activeCategory === cat.key ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "border-[#ddd] text-slate-600 hover:border-[#aaa]"}`}
-            >
-              {cat.label}
-            </button>
+      {/* ── ANNOUNCEMENT MARQUEE ───────────────────────────────────── */}
+      <div className="bg-[#0a0a0a] text-white py-3 overflow-hidden whitespace-nowrap">
+        <div className="flex w-max animate-marquee">
+          {[0, 1].map((i) => (
+            <span key={i} className="flex items-center gap-8 pr-8 text-sm font-semibold tracking-wide shrink-0" aria-hidden={i === 1}>
+              <span>🎓 46 établissements déjà référencés</span>
+              <span className="text-emerald-400">·</span>
+              <span>Inscription gratuite pour votre école</span>
+              <span className="text-emerald-400">·</span>
+              <span>Préinscription en ligne en quelques minutes</span>
+              <span className="text-emerald-400">·</span>
+              <span>Douala · Yaoundé</span>
+              <span className="text-emerald-400">·</span>
+            </span>
           ))}
         </div>
+      </div>
 
-        {/* Sub-categories when a category is active */}
-        {activeCatObj && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 [&::-webkit-scrollbar]:hidden">
-            <button
-              onClick={() => setActiveSubcategory("all")}
-              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-all shrink-0 ${activeSubcategory === "all" ? "bg-emerald-600 text-white border-emerald-600" : "border-[#ddd] text-slate-500 hover:border-slate-400"}`}
-            >
-              Tous
-            </button>
-            {activeCatObj.subcategories.map((sub) => (
-              <button
-                key={sub}
-                onClick={() => setActiveSubcategory(sub)}
-                className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-semibold border transition-all shrink-0 ${activeSubcategory === sub ? "bg-emerald-600 text-white border-emerald-600" : "border-[#ddd] text-slate-500 hover:border-slate-400"}`}
-              >
-                {sub}
-              </button>
-            ))}
-          </div>
-        )}
+      {/* ── MAIN CONTENT ───────────────────────────────────────────── */}
+      <main className="max-w-screen-xl mx-auto px-5 pt-8 pb-12">
 
         {/* Filters row */}
         <div className="flex items-center gap-3 mb-8 flex-wrap">
