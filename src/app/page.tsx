@@ -344,7 +344,7 @@ export default function HomePage() {
       </header>
 
       {/* ── HERO ───────────────────────────────────────────────────── */}
-      <section className="relative pt-[60px] pb-24 bg-[linear-gradient(165deg,#03130d_0%,#0a3d28_15%,#0f9d68_35%,#2fb086_50%,#5fc29e_60%,#8ed4b8_70%,#c3e9d7_80%,#eaf6f0_88%,#ffffff_100%)] text-white overflow-hidden">
+      <section className="relative pt-[60px] pb-6 bg-[radial-gradient(ellipse_farthest-corner_at_top_left,#03130d_0%,#0a3d28_12%,#0f9d68_30%,#2fb086_45%,#5fc29e_55%,#8ed4b8_65%,#c3e9d7_75%,#eaf6f0_85%,#ffffff_100%)] text-white overflow-hidden">
         <div className="relative max-w-screen-xl mx-auto px-5 pt-16 lg:pt-20">
           <div className="flex items-center gap-2 mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -454,27 +454,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── MAIN CONTENT ───────────────────────────────────────────── */}
-      <main className="max-w-screen-xl mx-auto px-5 py-12">
-
-        {/* Category pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-8 [&::-webkit-scrollbar]:hidden">
-          <button
-            onClick={() => { setActiveCategory("all"); setActiveSubcategory("all"); }}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition-all shrink-0 ${activeCategory === "all" ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "border-[#ddd] text-slate-600 hover:border-[#aaa]"}`}
-          >
-            Tout voir
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.key}
-              onClick={() => { setActiveCategory(cat.key); setActiveSubcategory("all"); }}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold border transition-all shrink-0 ${activeCategory === cat.key ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "border-[#ddd] text-slate-600 hover:border-[#aaa]"}`}
-            >
-              {cat.label}
-            </button>
+      {/* ── ANNOUNCEMENT MARQUEE ───────────────────────────────────── */}
+      <div className="bg-[#0a0a0a] text-white py-3 overflow-hidden whitespace-nowrap">
+        <div className="flex w-max animate-marquee">
+          {[0, 1].map((i) => (
+            <span key={i} className="flex items-center gap-8 pr-8 text-sm font-semibold tracking-wide shrink-0" aria-hidden={i === 1}>
+              <span>🎓 46 établissements déjà référencés</span>
+              <span className="text-emerald-400">·</span>
+              <span>Inscription gratuite pour votre école</span>
+              <span className="text-emerald-400">·</span>
+              <span>Préinscription en ligne en quelques minutes</span>
+              <span className="text-emerald-400">·</span>
+              <span>Douala · Yaoundé</span>
+              <span className="text-emerald-400">·</span>
+            </span>
           ))}
         </div>
+      </div>
+
+      {/* ── MAIN CONTENT ───────────────────────────────────────────── */}
+      <main className="max-w-screen-xl mx-auto px-5 pt-8 pb-12">
 
         {/* Filters row */}
         <div className="flex items-center gap-3 mb-8 flex-wrap">
